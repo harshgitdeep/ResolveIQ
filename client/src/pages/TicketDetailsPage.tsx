@@ -71,7 +71,7 @@ export const TicketDetailsPage: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-200 gap-6">
+      <div className="flex border-b border-slate-200 gap-4 sm:gap-6 overflow-x-auto scrollbar-none pb-0.5">
         {[
           { name: 'Conversation', icon: Bot },
           { name: 'Order Details', icon: ShoppingBag },
@@ -84,7 +84,7 @@ export const TicketDetailsPage: React.FC = () => {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name as any)}
-              className={`flex items-center gap-1.5 pb-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 pb-2.5 text-xs sm:text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                 isActive
                   ? 'border-blue-600 text-blue-600 font-semibold'
                   : 'border-transparent text-slate-500 hover:text-slate-800'

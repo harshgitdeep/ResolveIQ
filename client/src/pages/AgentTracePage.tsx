@@ -110,26 +110,26 @@ export const AgentTracePage: React.FC = () => {
         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
           Execution Run Summary
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-          <div className="border-r border-slate-100 pr-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="sm:border-r border-slate-100 sm:pr-3">
             <div className="text-[11px] text-slate-400">Total Steps</div>
             <div className="text-xl font-bold text-slate-900 mt-0.5">{traceRun.totalSteps}</div>
           </div>
-          <div className="border-r border-slate-100 pr-3">
+          <div className="sm:border-r border-slate-100 sm:pr-3">
             <div className="text-[11px] text-slate-400">Tool Calls</div>
             <div className="text-xl font-bold text-slate-900 mt-0.5">{traceRun.toolCalls}</div>
           </div>
-          <div className="border-r border-slate-100 pr-3">
+          <div className="sm:border-r border-slate-100 sm:pr-3">
             <div className="text-[11px] text-slate-400">Execution Duration</div>
             <div className="text-xl font-bold text-slate-900 mt-0.5">{traceRun.duration}</div>
           </div>
-          <div className="border-r border-slate-100 pr-3">
+          <div className="sm:border-r border-slate-100 sm:pr-3 col-span-2 sm:col-span-1">
             <div className="text-[11px] text-slate-400">Model Engine</div>
             <div className="text-sm font-semibold font-mono text-slate-800 mt-1 truncate">
               {traceRun.model}
             </div>
           </div>
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <div className="text-[11px] text-slate-400">Final Outcome</div>
             <div className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded inline-block mt-1">
               {traceRun.finalOutcome}

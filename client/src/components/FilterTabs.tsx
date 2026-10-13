@@ -14,7 +14,7 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({
   counts
 }) => {
   return (
-    <div className="flex items-center space-x-1 border-b border-slate-200 w-full">
+    <div className="flex items-center space-x-1 border-b border-slate-200 w-full overflow-x-auto scrollbar-none pb-0.5">
       {tabs.map((tab) => {
         const isActive = activeTab === tab;
         return (
