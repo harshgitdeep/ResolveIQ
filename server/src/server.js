@@ -1,7 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import pc from 'picocolors';
 import { config } from './config/index.js';
+import { testConnection } from './config/db.js';
 import apiRouter from './routes/api.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -24,7 +26,14 @@ app.get('/', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(config.port, () => {
-  console.log(`Server listening in ${config.nodeEnv} mode at http://localhost:${config.port}`);
+// Start server and verify database connection
+app.listen(config.port, async () => {
+  console.log(pc.yellow('\n\n\n----------------- Server Start -----------------\n'));
+  console.log(pc.yellow(`✔ Server listening in ${config.nodeEnv} mode at `) + pc.green(`http://localhost:${config.port}`));
+  console.log(pc.yellow('\n-------------------------------------------------\n\n\n'));
+  if (config.databaseUrl) {
+    await testConnection();
+  } else {
+    console.warn(pc.yellow('\n⚠ DATABASE_URL is not set in environment.'));
+  }
 });
