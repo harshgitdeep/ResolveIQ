@@ -104,6 +104,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           })}
         </nav>
 
+        {/* Quick Customer Portal Switcher for reviewer convenience */}
+        <div className="px-3 pb-2">
+          <NavLink
+            to="/portal"
+            onClick={onClose}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-medium text-blue-600 hover:text-blue-700 bg-blue-50/70 hover:bg-blue-100/60 rounded border border-blue-200/80 transition-colors"
+          >
+            Switch to Customer Portal →
+          </NavLink>
+        </div>
+
         {/* User profile footer */}
         <div className="p-3 border-t border-slate-100">
           <div className="flex items-center gap-2.5 p-2 rounded-md bg-slate-50/70 border border-slate-100">

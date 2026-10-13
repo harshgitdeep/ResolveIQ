@@ -4,8 +4,8 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD-1041',
     customerId: 'CUST-001',
-    customerName: 'Sarah Jenkins',
-    customerEmail: 'sarah.j@example.com',
+    customerName: 'Aman Sharma',
+    customerEmail: 'aman.sharma@example.com',
     date: 'Oct 09, 2026',
     amount: 189.00,
     paymentStatus: 'Paid',
@@ -13,15 +13,15 @@ export const mockOrders: Order[] = [
     items: [
       {
         id: 'ITEM-101',
-        name: 'Ergonomic Mechanical Keyboard (Pro)',
-        variant: 'Space Gray / Silent Red Switches',
+        name: 'Wireless Over-Ear Studio Headphones (ANC)',
+        variant: 'Midnight Black / High-Res Audio',
         quantity: 1,
         price: 149.00,
-        image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=150&auto=format&fit=crop&q=80'
+        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&auto=format&fit=crop&q=80'
       },
       {
         id: 'ITEM-102',
-        name: 'Braided Type-C Coiled Cable',
+        name: 'Braided Audio Cable & Travel Case',
         variant: 'Carbon / 1.5m',
         quantity: 1,
         price: 40.00,
@@ -270,8 +270,8 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD-1033',
     customerId: 'CUST-001',
-    customerName: 'Sarah Jenkins',
-    customerEmail: 'sarah.j@example.com',
+    customerName: 'Aman Sharma',
+    customerEmail: 'aman.sharma@example.com',
     date: 'Sep 21, 2026',
     amount: 230.00,
     paymentStatus: 'Paid',

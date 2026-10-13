@@ -36,12 +36,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
         </span>
       );
     case 'Waiting':
+    case 'Waiting for Customer':
       return (
         <span className={`inline-flex items-center rounded-md bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-700/10 ${sizeClasses}`}>
           <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5"></span>
-          Waiting
+          {status}
         </span>
       );
+
     case 'Refunded':
     case 'Cancelled':
       return (

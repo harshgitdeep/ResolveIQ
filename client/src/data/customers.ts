@@ -3,9 +3,9 @@ import { Customer } from '../types';
 export const mockCustomers: Customer[] = [
   {
     id: 'CUST-001',
-    name: 'Sarah Jenkins',
-    email: 'sarah.j@example.com',
-    avatarInitials: 'SJ',
+    name: 'Aman Sharma',
+    email: 'aman.sharma@example.com',
+    avatarInitials: 'AS',
     avatarBgColor: '#dbeafe',
     phone: '+1 (555) 234-8901',
     totalOrders: 6,
