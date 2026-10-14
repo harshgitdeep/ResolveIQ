@@ -157,14 +157,17 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
                 Account Settings
               </button>
               <div className="my-1 border-t border-slate-100" />
-              <button
-                type="button"
-                onClick={() => setAccountMenuOpen(false)}
+              <Link
+                to="/login"
+                onClick={() => {
+                  setAccountMenuOpen(false);
+                  onClose();
+                }}
                 className="w-full px-3 py-1.5 flex items-center gap-2 text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 Sign Out
-              </button>
+              </Link>
             </div>
           )}
 

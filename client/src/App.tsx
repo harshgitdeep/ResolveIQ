@@ -25,11 +25,25 @@ import { CustomerOrdersPage } from './pages/CustomerOrdersPage';
 import { CustomerOrderDetailsPage } from './pages/CustomerOrderDetailsPage';
 import { CustomerHelpCenterPage } from './pages/CustomerHelpCenterPage';
 
+// Auth Pages (UI Prototype)
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+
 export function App() {
   return (
     <CustomerProvider>
       <BrowserRouter>
         <Routes>
+          {/* ========================================================= */}
+          {/* Landing / Auth Routes (UI prototype)                      */}
+          {/* First page when landing on the website is /login           */}
+          {/* ========================================================= */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
           {/* ========================================================= */}
           {/* 1. Dedicated Customer-Facing Support Portal (/portal/...) */}
           {/* ========================================================= */}
@@ -44,10 +58,10 @@ export function App() {
           </Route>
 
           {/* ========================================================= */}
-          {/* 2. Employee / Support Agent Dashboard (preserved intact) */}
+          {/* 2. Employee / Support Agent Dashboard                     */}
           {/* ========================================================= */}
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="/app" element={<AppLayout />}>
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="tickets" element={<TicketsPage />} />
             <Route path="tickets/:id" element={<TicketDetailsPage />} />
@@ -58,9 +72,21 @@ export function App() {
             <Route path="orders/:id" element={<OrderDetailsPage />} />
             <Route path="knowledge-base" element={<KnowledgeBasePage />} />
             <Route path="settings" element={<SettingsPage />} />
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
+
+          {/* Direct convenience aliases for existing routes */}
+          <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="/tickets" element={<Navigate to="/app/tickets" replace />} />
+          <Route path="/tickets/:id" element={<Navigate to="/app/tickets/:id" replace />} />
+          <Route path="/customers" element={<Navigate to="/app/customers" replace />} />
+          <Route path="/customers/:id" element={<Navigate to="/app/customers/:id" replace />} />
+          <Route path="/orders" element={<Navigate to="/app/orders" replace />} />
+          <Route path="/orders/:id" element={<Navigate to="/app/orders/:id" replace />} />
+          <Route path="/knowledge-base" element={<Navigate to="/app/knowledge-base" replace />} />
+          <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </CustomerProvider>

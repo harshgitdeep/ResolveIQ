@@ -28,12 +28,6 @@ export const DashboardPage: React.FC = () => {
       <PageHeader
         title="Welcome back, Aman"
         subtitle="Here's what's happening with your support today."
-        actions={
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white border border-slate-200 text-xs font-medium text-slate-600 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Autopilot Active (87% Auto-resolved)
-          </div>
-        }
       />
 
       {/* Metric Cards Grid */}
