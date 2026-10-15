@@ -34,7 +34,7 @@ export const CustomerTicketListPage: React.FC = () => {
         : activeTab === 'Open'
         ? ticket.status === 'Open'
         : activeTab === 'In Progress'
-        ? ticket.status === 'In Progress' || ticket.status === 'Waiting' || ticket.status === 'Waiting for Customer'
+        ? ticket.status === 'In Progress' || ticket.status === 'Waiting'
         : ticket.status === 'Resolved';
 
     return matchesSearch && matchesStatus;
@@ -44,7 +44,7 @@ export const CustomerTicketListPage: React.FC = () => {
     All: customerTickets.length,
     Open: customerTickets.filter((t) => t.status === 'Open').length,
     'In Progress': customerTickets.filter(
-      (t) => t.status === 'In Progress' || t.status === 'Waiting' || t.status === 'Waiting for Customer'
+      (t) => t.status === 'In Progress' || t.status === 'Waiting'
     ).length,
     Resolved: customerTickets.filter((t) => t.status === 'Resolved').length,
   };

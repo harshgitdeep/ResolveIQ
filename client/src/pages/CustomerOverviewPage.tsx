@@ -21,7 +21,7 @@ export const CustomerOverviewPage: React.FC = () => {
   const { currentCustomer, customerTickets, customerOrders } = useCustomer();
 
   const openTicketsCount = customerTickets.filter(
-    (t) => t.status === 'Open' || t.status === 'In Progress' || t.status === 'Waiting' || t.status === 'Waiting for Customer'
+    (t) => t.status === 'Open' || t.status === 'In Progress' || t.status === 'Waiting'
   ).length;
 
   const resolvedTicketsCount = customerTickets.filter((t) => t.status === 'Resolved').length;
