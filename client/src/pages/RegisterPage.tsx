@@ -1,17 +1,36 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Bot, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Bot, User, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Simple UI only - no functionality
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const user = await register(name, email, password);
+      if (user.role === 'customer') {
+        navigate('/portal');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +52,13 @@ export const RegisterPage: React.FC = () => {
             Sign up to start submitting and tracking tickets
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2 text-rose-700 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
@@ -88,7 +114,8 @@ export const RegisterPage: React.FC = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create password"
+                placeholder="At least 6 characters"
+                minLength={6}
                 required
                 className="w-full pl-9 pr-10 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
               />
@@ -106,9 +133,11 @@ export const RegisterPage: React.FC = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full mt-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer shadow-xs"
+            disabled={loading}
+            className="w-full mt-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
           >
-            Create Account
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{loading ? 'Creating account...' : 'Create Account'}</span>
           </button>
         </form>
 
@@ -132,26 +161,6 @@ export const RegisterPage: React.FC = () => {
             Sign in
           </Link>
         </div>
-      </div>
-
-      {/* Demo helper navigation */}
-      <div className="mt-6 flex items-center gap-3 text-xs text-slate-500">
-        <span>Quick view:</span>
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="text-blue-600 hover:underline cursor-pointer"
-        >
-          Agent Dashboard
-        </button>
-        <span>•</span>
-        <button
-          type="button"
-          onClick={() => navigate('/portal')}
-          className="text-blue-600 hover:underline cursor-pointer"
-        >
-          Customer Portal
-        </button>
       </div>
     </div>
   );

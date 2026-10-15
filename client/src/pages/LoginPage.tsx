@@ -1,16 +1,36 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Bot } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Bot, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Simple UI only - no functionality
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const user = await login(email, password);
+      // Route user based on their role
+      if (user.role === 'customer') {
+        navigate('/portal');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +53,13 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2 text-rose-700 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Address */}
           <div>
@@ -47,7 +74,7 @@ export const LoginPage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder="harsh@example.com"
                 required
                 className="w-full pl-9 pr-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
               />
@@ -93,9 +120,11 @@ export const LoginPage: React.FC = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full mt-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer shadow-xs"
+            disabled={loading}
+            className="w-full mt-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
           >
-            Sign In
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{loading ? 'Signing in...' : 'Sign In'}</span>
           </button>
         </form>
 
@@ -121,24 +150,40 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Demo helper navigation */}
-      <div className="mt-6 flex items-center gap-3 text-xs text-slate-500">
-        <span>Quick view:</span>
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="text-blue-600 hover:underline cursor-pointer"
-        >
-          Agent Dashboard
-        </button>
-        <span>•</span>
-        <button
-          type="button"
-          onClick={() => navigate('/portal')}
-          className="text-blue-600 hover:underline cursor-pointer"
-        >
-          Customer Portal
-        </button>
+      {/* Demo Credentials Helper Card */}
+      <div className="mt-6 w-full max-w-md bg-white/70 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 shadow-2xs">
+        <span className="font-semibold text-slate-800">Test Accounts:</span>
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+          <div>
+            <span className="text-slate-500">Customer: </span>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('harsh@example.com');
+                setPassword('Password123!');
+              }}
+              className="text-blue-600 hover:underline font-mono cursor-pointer"
+            >
+              harsh@example.com
+            </button>
+          </div>
+          <div>
+            <span className="text-slate-500">Agent: </span>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('priya.agent@example.com');
+                setPassword('Password123!');
+              }}
+              className="text-blue-600 hover:underline font-mono cursor-pointer"
+            >
+              priya.agent@example.com
+            </button>
+          </div>
+        </div>
+        <div className="mt-1 text-[10px] text-slate-400">
+          Password: <span className="font-mono text-slate-600">Password123!</span>
+        </div>
       </div>
     </div>
   );

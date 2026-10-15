@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from './layouts/AppLayout';
 import { CustomerLayout } from './layouts/CustomerLayout';
 import { CustomerProvider } from './context/CustomerContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Employee Dashboard Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -32,9 +33,10 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 
 export function App() {
   return (
-    <CustomerProvider>
-      <BrowserRouter>
-        <Routes>
+    <AuthProvider>
+      <CustomerProvider>
+        <BrowserRouter>
+          <Routes>
           {/* ========================================================= */}
           {/* Landing / Auth Routes (UI prototype)                      */}
           {/* First page when landing on the website is /login           */}
@@ -90,6 +92,7 @@ export function App() {
         </Routes>
       </BrowserRouter>
     </CustomerProvider>
+  </AuthProvider>
   );
 }
 
