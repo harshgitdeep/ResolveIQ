@@ -83,9 +83,9 @@ export const OrdersPage: React.FC = () => {
               {filteredOrders.map((order) => (
                 <tr
                   key={order.id}
-                  className="hover:bg-blue-50/40 transition-colors group"
+                  className="hover:bg-zinc-50 transition-colors group"
                 >
-                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-blue-600 whitespace-nowrap">
+                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-zinc-900 whitespace-nowrap">
                     <Link to={`/orders/${order.id}`} className="hover:underline">
                       {order.id}
                     </Link>
@@ -93,16 +93,16 @@ export const OrdersPage: React.FC = () => {
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <Link
                       to={`/customers/${order.customerId}`}
-                      className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
+                      className="font-medium text-zinc-900 hover:underline transition-colors"
                     >
                       {order.customerName}
                     </Link>
-                    <div className="text-xs text-slate-400">{order.customerEmail}</div>
+                    <div className="text-xs text-zinc-400">{order.customerEmail}</div>
                   </td>
-                  <td className="py-3.5 px-4 text-xs text-slate-600 whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-xs text-zinc-600 whitespace-nowrap">
                     {order.date}
                   </td>
-                  <td className="py-3.5 px-4 text-right font-medium text-slate-900 whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-right font-medium text-zinc-900 whitespace-nowrap">
                     ${order.amount.toFixed(2)}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
@@ -114,7 +114,7 @@ export const OrdersPage: React.FC = () => {
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     <Link
                       to={`/orders/${order.id}`}
-                      className="text-xs text-blue-600 font-medium hover:text-blue-800 inline-flex items-center gap-1"
+                      className="text-xs text-zinc-900 font-medium hover:text-black hover:underline inline-flex items-center gap-1"
                     >
                       View <ArrowRight className="w-3 h-3" />
                     </Link>

@@ -90,9 +90,9 @@ export const TicketsPage: React.FC = () => {
               {filteredTickets.map((ticket) => (
                 <tr
                   key={ticket.id}
-                  className="hover:bg-blue-50/40 transition-colors group"
+                  className="hover:bg-zinc-50 transition-colors group"
                 >
-                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-blue-600 whitespace-nowrap">
+                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-zinc-900 whitespace-nowrap">
                     <Link
                       to={`/tickets/${ticket.id}`}
                       className="hover:underline flex items-center gap-1.5"
@@ -103,31 +103,31 @@ export const TicketsPage: React.FC = () => {
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <Link
                       to={`/customers/${ticket.customerId}`}
-                      className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
+                      className="font-medium text-zinc-900 hover:underline transition-colors"
                     >
                       {ticket.customerName}
                     </Link>
-                    <div className="text-xs text-slate-400">{ticket.customerEmail}</div>
+                    <div className="text-xs text-zinc-400">{ticket.customerEmail}</div>
                   </td>
                   <td className="py-3.5 px-4 max-w-xs">
                     <Link
                       to={`/tickets/${ticket.id}`}
-                      className="text-slate-800 font-medium hover:text-blue-600 transition-colors line-clamp-1"
+                      className="text-zinc-800 font-medium hover:text-black hover:underline transition-colors line-clamp-1"
                     >
                       {ticket.subject}
                     </Link>
-                    <div className="text-xs text-slate-400">{ticket.assignedAgent}</div>
+                    <div className="text-xs text-zinc-400">{ticket.assignedAgent}</div>
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-xs text-slate-600 whitespace-nowrap">
+                  <td className="py-3.5 px-4 font-mono text-xs text-zinc-600 whitespace-nowrap">
                     {ticket.orderId ? (
                       <Link
                         to={`/orders/${ticket.orderId}`}
-                        className="text-slate-600 hover:text-blue-600 hover:underline"
+                        className="text-zinc-600 hover:text-black hover:underline"
                       >
                         {ticket.orderId}
                       </Link>
                     ) : (
-                      <span className="text-slate-400">—</span>
+                      <span className="text-zinc-400">—</span>
                     )}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">

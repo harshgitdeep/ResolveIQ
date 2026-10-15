@@ -1,40 +1,36 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
-import { Menu, Bot } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Avatar } from '../components/Avatar';
+import { BrandLogo } from '../components/BrandLogo';
 
 export const AppLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#fbfbfb] text-zinc-900 flex flex-col lg:flex-row">
       {/* Mobile Top App Bar */}
-      <header className="lg:hidden h-14 bg-white border-b border-slate-200/90 px-4 flex items-center justify-between sticky top-0 z-30">
+      <header className="lg:hidden h-14 bg-white border-b border-zinc-200 px-4 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="p-1.5 -ml-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md cursor-pointer"
+            className="p-1.5 -ml-1 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 rounded-md cursor-pointer"
             aria-label="Open sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
           <NavLink to="/dashboard" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-xs">
-              <Bot className="w-3.5 h-3.5" />
-            </div>
-            <span className="font-semibold text-slate-900 tracking-tight text-sm">
-              ResolveIQ
-            </span>
+            <BrandLogo size="xs" showText={true} />
           </NavLink>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">
-            AI Core
+          <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-900 border border-zinc-200">
+            Agent
           </span>
-          <Avatar initials="AS" size="sm" bgColor="#e2e8f0" />
+          <Avatar initials="AS" size="sm" bgColor="#e4e4e7" />
         </div>
       </header>
 

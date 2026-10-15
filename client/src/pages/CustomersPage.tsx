@@ -60,12 +60,12 @@ export const CustomersPage: React.FC = () => {
               {filteredCustomers.map((customer) => (
                 <tr
                   key={customer.id}
-                  className="hover:bg-blue-50/40 transition-colors group"
+                  className="hover:bg-zinc-50 transition-colors group"
                 >
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <Link
                       to={`/customers/${customer.id}`}
-                      className="flex items-center gap-3 group-hover:text-blue-600 transition-colors"
+                      className="flex items-center gap-3 group-hover:text-black transition-colors"
                     >
                       <Avatar
                         initials={customer.avatarInitials}
@@ -73,20 +73,20 @@ export const CustomersPage: React.FC = () => {
                         bgColor={customer.avatarBgColor}
                       />
                       <div>
-                        <div className="font-medium text-slate-900 group-hover:text-blue-600">
+                        <div className="font-medium text-zinc-900 group-hover:text-black">
                           {customer.name}
                         </div>
-                        <div className="text-xs text-slate-400 font-mono">{customer.id}</div>
+                        <div className="text-xs text-zinc-400 font-mono">{customer.id}</div>
                       </div>
                     </Link>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-600 text-xs whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-zinc-600 text-xs whitespace-nowrap">
                     {customer.email}
                   </td>
-                  <td className="py-3.5 px-4 text-center font-medium text-slate-900 whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-center font-medium text-zinc-900 whitespace-nowrap">
                     {customer.totalOrders}
                   </td>
-                  <td className="py-3.5 px-4 text-right font-medium text-slate-900 whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-right font-medium text-zinc-900 whitespace-nowrap">
                     ${customer.totalSpent.toFixed(2)}
                   </td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -95,16 +95,16 @@ export const CustomersPage: React.FC = () => {
                         {customer.openTickets} open
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-400">0</span>
+                      <span className="text-xs text-zinc-400">0</span>
                     )}
                   </td>
-                  <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-xs text-zinc-500 whitespace-nowrap">
                     {customer.joinedDate}
                   </td>
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     <Link
                       to={`/customers/${customer.id}`}
-                      className="text-xs text-blue-600 font-medium hover:text-blue-800 inline-flex items-center gap-1"
+                      className="text-xs text-zinc-900 font-medium hover:text-black hover:underline inline-flex items-center gap-1"
                     >
                       View profile <ArrowRight className="w-3 h-3" />
                     </Link>

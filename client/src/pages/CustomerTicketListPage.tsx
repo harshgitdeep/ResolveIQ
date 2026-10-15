@@ -92,38 +92,38 @@ export const CustomerTicketListPage: React.FC = () => {
             return (
               <div
                 key={ticket.id}
-                className="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 sm:p-5 hover:bg-zinc-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-semibold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded">
                       {ticket.id}
                     </span>
                     <StatusBadge status={ticket.status} size="sm" />
                     {ticket.orderId && (
-                      <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      <span className="text-xs text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">
                         Order #{ticket.orderId}
                       </span>
                     )}
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-zinc-400">
                       Created {ticket.createdAt}
                     </span>
                   </div>
 
                   <Link
                     to={`/portal/tickets/${ticket.id}`}
-                    className="block text-sm sm:text-base font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+                    className="block text-sm sm:text-base font-semibold text-zinc-950 hover:text-black hover:underline transition-colors"
                   >
                     {ticket.subject}
                   </Link>
 
                   {/* Last message preview */}
                   {lastMessage && (
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <span className="font-medium text-slate-700 shrink-0">
+                    <div className="flex items-center gap-2 text-xs text-zinc-500">
+                      <span className="font-medium text-zinc-700 shrink-0">
                         {lastMessage.senderType === 'agent' ? (
-                          <span className="inline-flex items-center gap-1 text-blue-700">
-                            <Sparkles className="w-3 h-3 text-blue-600" />
+                          <span className="inline-flex items-center gap-1 text-zinc-900 font-semibold">
+                            <Sparkles className="w-3 h-3 text-zinc-900" />
                             ResolveIQ AI:
                           </span>
                         ) : (

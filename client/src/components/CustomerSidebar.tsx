@@ -5,7 +5,6 @@ import {
   MessageSquare,
   Package,
   HelpCircle,
-  Bot,
   X,
   Settings,
   LogOut,
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { useCustomer } from '../context/CustomerContext';
+import { BrandLogo } from './BrandLogo';
 
 interface CustomerSidebarProps {
   isOpen: boolean;
@@ -38,28 +38,23 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           aria-hidden="true"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`w-[240px] h-screen bg-white border-r border-slate-200/90 flex flex-col fixed left-0 top-0 z-50 select-none transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`w-[240px] h-screen bg-white border-r border-zinc-200 flex flex-col fixed left-0 top-0 z-50 select-none transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
         }`}
       >
         {/* Brand / Header */}
-        <div className="h-14 px-4 flex items-center justify-between border-b border-slate-100">
-          <NavLink to="/portal" onClick={onClose} className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-xs">
-              <Bot className="w-3.5 h-3.5" />
-            </div>
-            <span className="font-semibold text-slate-900 tracking-tight text-[15px]">
-              ResolveIQ
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
-              Support
+        <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-100">
+          <NavLink to="/portal" onClick={onClose} className="flex items-center gap-2">
+            <BrandLogo size="sm" showText={true} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-900 border border-zinc-200">
+              Portal
             </span>
           </NavLink>
 
@@ -67,7 +62,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 lg:hidden cursor-pointer"
+            className="p-1 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 lg:hidden cursor-pointer"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -76,7 +71,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
 
         {/* Customer Nav List */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
-          <div className="px-2 pb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          <div className="px-2 pb-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
             Customer Portal
           </div>
           {customerNavItems.map((item) => {
@@ -90,8 +85,8 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-zinc-900 text-white font-semibold shadow-xs'
+                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
                   }`
                 }
               >
@@ -99,7 +94,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
                   <>
                     <Icon
                       className={`w-4 h-4 transition-colors ${
-                        isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
+                        isActive ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-700'
                       }`}
                     />
                     <span>{item.name}</span>
@@ -110,12 +105,12 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
           })}
 
           <div className="pt-4 px-2">
-            <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3 text-xs">
-              <div className="font-medium text-slate-900 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+            <div className="rounded-lg bg-zinc-50 border border-zinc-200 p-3 text-xs">
+              <div className="font-semibold text-zinc-900 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-zinc-900" />
                 AI Support Portal
               </div>
-              <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
+              <p className="text-zinc-500 text-[11px] mt-1 leading-relaxed">
                 24/7 instant resolutions powered by ResolveIQ autonomous assistant.
               </p>
             </div>
@@ -127,7 +122,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ isOpen, onClos
           <Link
             to="/dashboard"
             onClick={onClose}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-medium text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 rounded border border-dashed border-slate-200 transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-medium text-zinc-900 hover:text-white bg-zinc-100 hover:bg-zinc-900 rounded border border-zinc-200 transition-colors"
           >
             Switch to Agent Dashboard →
           </Link>

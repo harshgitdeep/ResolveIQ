@@ -14,7 +14,7 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({
   counts
 }) => {
   return (
-    <div className="flex items-center space-x-1 border-b border-slate-200 w-full overflow-x-auto scrollbar-none pb-0.5">
+    <div className="flex items-center space-x-1 border-b border-zinc-200 w-full overflow-x-auto scrollbar-none pb-0.5">
       {tabs.map((tab) => {
         const isActive = activeTab === tab;
         return (
@@ -23,17 +23,17 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({
             onClick={() => onTabChange(tab)}
             className={`inline-flex items-center pb-2.5 px-3 text-sm font-medium border-b-2 transition-colors -mb-px cursor-pointer ${
               isActive
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                ? 'border-zinc-900 text-zinc-950 font-semibold'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300'
             }`}
           >
             {tab}
             {counts && counts[tab] !== undefined && (
               <span
-                className={`ml-2 px-1.5 py-0.2 rounded-full text-xs ${
+                className={`ml-2 px-1.5 py-0.2 rounded-full text-xs font-semibold ${
                   isActive
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-slate-100 text-slate-600'
+                    ? 'bg-zinc-900 text-white'
+                    : 'bg-zinc-100 text-zinc-600'
                 }`}
               >
                 {counts[tab]}

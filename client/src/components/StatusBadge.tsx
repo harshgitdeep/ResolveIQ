@@ -13,8 +13,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   switch (status) {
     case 'Open':
       return (
-        <span className={`inline-flex items-center rounded-md bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10 ${sizeClasses}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+        <span className={`inline-flex items-center rounded-md bg-zinc-900 text-white font-medium ${sizeClasses}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-white mr-1.5"></span>
           Open
         </span>
       );

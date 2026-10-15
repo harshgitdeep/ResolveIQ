@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Bot, User, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { BrandLogo } from '../components/BrandLogo';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,21 +35,17 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center px-4 py-8 sm:px-6">
+    <div className="min-h-screen bg-[#fbfbfb] flex flex-col justify-center items-center px-4 py-8 sm:px-6">
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md mb-3">
-          <Bot className="w-6 h-6" />
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">ResolveIQ</h2>
-        <p className="text-sm text-slate-500 mt-1">Customer Support & Ticketing</p>
+        <BrandLogo size="xl" showText={true} subtitle="Customer Support & Ticketing" className="flex-col !gap-3 text-center" />
       </div>
 
       {/* Registration Card */}
-      <div className="w-full max-w-md bg-white rounded-xl shadow-xs border border-slate-200 p-6 sm:p-8">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-xs border border-zinc-200 p-6 sm:p-8">
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-slate-900">Create an Account</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-xl font-bold text-zinc-900">Create an Account</h1>
+          <p className="text-sm text-zinc-500 mt-1">
             Sign up to start submitting and tracking tickets
           </p>
         </div>
@@ -63,11 +60,11 @@ export const RegisterPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
               Full Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -76,18 +73,18 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 required
-                className="w-full pl-9 pr-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                className="w-full pl-9 pr-3.5 py-2 bg-white border border-zinc-300 rounded-lg text-zinc-900 placeholder-zinc-400 text-sm focus:outline-hidden focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
               />
             </div>
           </div>
 
           {/* Email Address */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
               Email
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -96,18 +93,18 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 required
-                className="w-full pl-9 pr-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                className="w-full pl-9 pr-3.5 py-2 bg-white border border-zinc-300 rounded-lg text-zinc-900 placeholder-zinc-400 text-sm focus:outline-hidden focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
               />
             </div>
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
               Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -117,12 +114,12 @@ export const RegisterPage: React.FC = () => {
                 placeholder="At least 6 characters"
                 minLength={6}
                 required
-                className="w-full pl-9 pr-10 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-hidden focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                className="w-full pl-9 pr-10 py-2 bg-white border border-zinc-300 rounded-lg text-zinc-900 placeholder-zinc-400 text-sm focus:outline-hidden focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 cursor-pointer"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -134,7 +131,7 @@ export const RegisterPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
+            className="w-full mt-2 py-2.5 px-4 bg-zinc-900 hover:bg-black disabled:bg-zinc-400 text-white font-medium text-sm rounded-lg transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2 active:scale-[0.99]"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>{loading ? 'Creating account...' : 'Create Account'}</span>
@@ -144,19 +141,19 @@ export const RegisterPage: React.FC = () => {
         {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200" />
+            <div className="w-full border-t border-zinc-200" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="px-2 bg-white text-slate-400">or</span>
+            <span className="px-2 bg-white text-zinc-400">or</span>
           </div>
         </div>
 
         {/* Already have an account prompt */}
-        <div className="text-center text-sm text-slate-600">
+        <div className="text-center text-sm text-zinc-600">
           <span>Already have an account? </span>
           <Link
             to="/login"
-            className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+            className="font-medium text-zinc-900 hover:underline"
           >
             Sign in
           </Link>
