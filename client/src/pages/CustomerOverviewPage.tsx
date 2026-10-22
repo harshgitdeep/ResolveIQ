@@ -14,14 +14,24 @@ import {
   HelpCircle,
   Clock,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
 
 export const CustomerOverviewPage: React.FC = () => {
-  const { currentCustomer, customerTickets, customerOrders } = useCustomer();
+  const { currentCustomer, customerTickets, customerOrders, loading } = useCustomer();
+
+  if (loading || !currentCustomer) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-500">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <span className="text-sm font-medium">Connecting to customer portal...</span>
+      </div>
+    );
+  }
 
   const openTicketsCount = customerTickets.filter(
-    (t) => t.status === 'Open' || t.status === 'In Progress' || t.status === 'Waiting' || t.status === 'Waiting for Customer'
+    (t) => t.status === 'Open' || t.status === 'In Progress' || t.status === 'Waiting'
   ).length;
 
   const resolvedTicketsCount = customerTickets.filter((t) => t.status === 'Resolved').length;
@@ -59,188 +69,153 @@ export const CustomerOverviewPage: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
-          label="Open Tickets"
+          label="Open Inquiries"
           value={openTicketsCount}
-          icon={<MessageSquare className="w-4 h-4 text-amber-600" />}
-          comparison={{ text: 'Actively in review', trend: 'neutral' }}
+          icon={<MessageSquare className="w-4 h-4 text-blue-600" />}
+          comparison={{ text: 'Active with AI agent', trend: 'neutral' }}
+        />
+        <MetricCard
+          label="My Orders"
+          value={customerOrders.length}
+          icon={<Package className="w-4 h-4 text-purple-600" />}
+          comparison={{ text: 'Purchases recorded', trend: 'neutral' }}
         />
         <MetricCard
           label="Resolved Tickets"
           value={resolvedTicketsCount}
           icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-          comparison={{ text: '100% resolution rate', trend: 'up' }}
-        />
-        <MetricCard
-          label="Recent Orders"
-          value={customerOrders.length}
-          icon={<Package className="w-4 h-4 text-blue-600" />}
-          comparison={{ text: 'Active purchases', trend: 'neutral' }}
+          comparison={{ text: 'Successfully closed', trend: 'up' }}
         />
       </div>
 
-      {/* Two-Column: Recent Tickets & Recent Orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left (7 cols): Recent Support Tickets */}
-        <div className="lg:col-span-7 bg-white rounded-lg border border-slate-200/90 shadow-2xs overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-900">Your Support Tickets</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Track real-time status and agent conversations</p>
-            </div>
-            <Link
-              to="/portal/tickets"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
-            >
-              View all ({customerTickets.length})
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {recentTickets.map((ticket) => (
-              <Link
-                key={ticket.id}
-                to={`/portal/tickets/${ticket.id}`}
-                className="p-4 block hover:bg-slate-50/80 transition-colors group"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                      {ticket.id}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {ticket.orderId ? `Order #${ticket.orderId}` : 'General Inquiry'}
-                    </span>
-                  </div>
-                  <StatusBadge status={ticket.status} size="sm" />
-                </div>
-                <div className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors mt-2">
-                  {ticket.subject}
-                </div>
-                <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-slate-400" />
-                    Updated {ticket.lastUpdated}
-                  </span>
-                  <span className="text-blue-600 font-medium group-hover:underline inline-flex items-center gap-0.5">
-                    Open thread <ChevronRight className="w-3 h-3" />
-                  </span>
-                </div>
+      {/* Two Column Layout: Active Inquiries & Recent Orders */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Recent Tickets (7 cols) */}
+        <div className="lg:col-span-7 bg-white rounded-xl border border-slate-200/90 p-5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-slate-900">Recent Support Requests</h2>
+              <Link to="/portal/tickets" className="text-xs font-medium text-blue-600 hover:underline flex items-center gap-1">
+                View all ({customerTickets.length}) <ArrowRight className="w-3 h-3" />
               </Link>
-            ))}
-
-            {recentTickets.length === 0 && (
-              <div className="p-8 text-center text-sm text-slate-500">
-                You have no active support tickets.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right (5 cols): Recent Orders */}
-        <div className="lg:col-span-5 bg-white rounded-lg border border-slate-200/90 shadow-2xs overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-900">Recent Orders</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Delivered and in-transit items</p>
             </div>
-            <Link
-              to="/portal/orders"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
-            >
-              All orders ({customerOrders.length})
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          </div>
 
-          <div className="divide-y divide-slate-100">
-            {recentOrders.map((order) => {
-              const primaryItem = order.items[0];
-              return (
-                <div key={order.id} className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-semibold text-slate-900">
-                      #{order.id}
-                    </span>
-                    <StatusBadge status={order.fulfillmentStatus} size="sm" />
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {primaryItem && (
-                      <img
-                        src={primaryItem.image}
-                        alt={primaryItem.name}
-                        className="w-12 h-12 rounded object-cover border border-slate-200 bg-slate-50"
-                      />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-slate-900 truncate">
-                        {primaryItem?.name}
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        {order.date} • ${order.amount.toFixed(2)}
-                      </div>
+            <div className="divide-y divide-slate-100">
+              {recentTickets.map((ticket) => (
+                <Link
+                  key={ticket.id}
+                  to={`/portal/tickets/${ticket.id}`}
+                  className="py-3.5 flex items-start justify-between gap-3 hover:bg-slate-50 -mx-2 px-2 rounded-lg transition-colors block"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-blue-600">{ticket.id}</span>
+                      <StatusBadge status={ticket.status} size="sm" />
+                    </div>
+                    <p className="text-xs font-semibold text-slate-800 truncate">{ticket.subject}</p>
+                    <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                      <span>Updated {ticket.lastUpdated}</span>
+                      {ticket.orderId && <span>Order: {ticket.orderId}</span>}
                     </div>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                </Link>
+              ))}
 
-                  <div className="flex items-center justify-between pt-1">
-                    <Link
-                      to={`/portal/orders/${order.id}`}
-                      className="text-xs text-slate-600 hover:text-slate-900 font-medium"
-                    >
-                      View Order
-                    </Link>
-                    <Link
-                      to={`/portal/tickets/new?orderId=${order.id}`}
-                      className="text-xs text-blue-600 hover:underline font-medium"
-                    >
-                      Get Help →
-                    </Link>
-                  </div>
+              {recentTickets.length === 0 && (
+                <div className="py-8 text-center">
+                  <p className="text-xs text-slate-500">You don’t have any active support tickets right now.</p>
+                  <Link to="/portal/tickets/new" className="mt-2 inline-block text-xs font-semibold text-blue-600 hover:underline">
+                    Create your first ticket →
+                  </Link>
                 </div>
-              );
-            })}
+              )}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 mt-4">
+            <Link
+              to="/portal/tickets/new"
+              className="w-full inline-flex items-center justify-center gap-2 py-2 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Start New Support Request
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Column: Recent Orders (5 cols) */}
+        <div className="lg:col-span-5 bg-white rounded-xl border border-slate-200/90 p-5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-slate-900">Your Recent Orders</h2>
+              <Link to="/portal/orders" className="text-xs font-medium text-blue-600 hover:underline flex items-center gap-1">
+                All Orders ({customerOrders.length}) <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {recentOrders.map((order) => (
+                <Link
+                  key={order.id}
+                  to={`/portal/orders/${order.id}`}
+                  className="py-3.5 flex items-start justify-between gap-3 hover:bg-slate-50 -mx-2 px-2 rounded-lg transition-colors block"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-slate-900">{order.id}</span>
+                      <StatusBadge status={order.fulfillmentStatus} size="sm" />
+                    </div>
+                    <p className="text-xs font-medium text-slate-700 truncate">
+                      {order.items[0]?.name || 'Purchased Item'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-mono">
+                      ₹{order.amount.toLocaleString()} • {order.date}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                </Link>
+              ))}
+
+              {recentOrders.length === 0 && (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No orders found in your account history.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 mt-4">
+            <Link
+              to="/portal/orders"
+              className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
+            >
+              View Order Tracking & Delivery
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Help Center Section */}
-      <div className="bg-white rounded-lg border border-slate-200/90 p-5 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <HelpCircle className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-slate-900">Help Center & Common Questions</h2>
-              <p className="text-xs text-slate-500">Quick answers regarding shipping, replacements, and returns</p>
-            </div>
+      {/* Helpful FAQs Section */}
+      <div className="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-4 h-4 text-blue-600" />
+            <h2 className="text-sm font-semibold text-slate-900">Frequently Asked Questions</h2>
           </div>
-          <Link
-            to="/portal/help"
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-          >
-            Browse all topics <ArrowRight className="w-3 h-3" />
+          <Link to="/portal/help" className="text-xs font-medium text-blue-600 hover:underline">
+            Visit Help Center →
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {commonFAQs.map((faq) => (
-            <Link
-              key={faq.id}
-              to="/portal/help"
-              className="p-3.5 rounded-lg border border-slate-100 bg-slate-50/60 hover:bg-slate-100/80 transition-colors block"
-            >
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 mb-1">
+            <div key={faq.id} className="p-3.5 rounded-lg bg-slate-50/70 border border-slate-100 space-y-1.5">
+              <span className="text-[10px] font-semibold uppercase text-blue-600 tracking-wider">
                 {faq.category}
-              </div>
-              <h3 className="text-xs font-semibold text-slate-900 line-clamp-2">
-                {faq.question}
-              </h3>
-              <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
-                {faq.answer}
-              </p>
-            </Link>
+              </span>
+              <h3 className="text-xs font-bold text-slate-900">{faq.question}</h3>
+              <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{faq.answer}</p>
+            </div>
           ))}
         </div>
       </div>

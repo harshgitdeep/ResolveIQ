@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockTickets } from '../data/tickets';
-import { mockMessages } from '../data/messages';
-import { mockOrders } from '../data/orders';
-import { mockCustomers } from '../data/customers';
-import { mockAgentTraces } from '../data/agentTraces';
+import { api } from '../services/api';
+import { Ticket, Message, Order, Customer, AgentTraceRun } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { PriorityBadge } from '../components/PriorityBadge';
 import { Avatar } from '../components/Avatar';
@@ -12,32 +9,100 @@ import { Button } from '../components/Button';
 import { InfoCard } from '../components/InfoCard';
 import {
   ArrowLeft,
-  Paperclip,
   Send,
-  CheckCircle,
-  UserCheck,
-  FileEdit,
   ExternalLink,
   Bot,
   Sparkles,
   ShoppingBag,
   User,
   Activity,
-  Code
+  Loader2
 } from 'lucide-react';
 
 export const TicketDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const ticketId = id || 'TKT-1041';
 
-  const ticket = mockTickets.find((t) => t.id === ticketId) || mockTickets[0];
-  const messages = mockMessages[ticket.id] || mockMessages['TKT-1041'];
-  const order = mockOrders.find((o) => o.id === ticket.orderId);
-  const customer = mockCustomers.find((c) => c.id === ticket.customerId);
-  const agentTrace = mockAgentTraces[ticket.id] || mockAgentTraces['TKT-1041'];
+  const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [agentTrace, setAgentTrace] = useState<AgentTraceRun | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<'Conversation' | 'Order Details' | 'Customer Info' | 'Agent Trace'>('Conversation');
   const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const fetchTicketDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getTicketById(ticketId);
+      setTicket(res.ticket);
+      setMessages(res.messages);
+
+      // Fetch related order if available
+      if (res.ticket.orderId) {
+        try {
+          const ordRes = await api.getOrderById(res.ticket.orderId);
+          setOrder(ordRes.order);
+        } catch (e) {
+          console.warn('Order could not be loaded:', e);
+        }
+      }
+
+      // Fetch customer details if available
+      if (res.ticket.customerId) {
+        try {
+          const custRes = await api.getCustomerById(res.ticket.customerId);
+          setCustomer(custRes.customer);
+        } catch (e) {
+          console.warn('Customer could not be loaded:', e);
+        }
+      }
+
+      // Fetch agent trace for this ticket
+      try {
+        const trace = await api.getAgentTraceForTicket(ticketId);
+        setAgentTrace(trace);
+      } catch (e) {
+        console.warn('Trace could not be loaded:', e);
+      }
+    } catch (err) {
+      console.error('Failed to load ticket details:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTicketDetails();
+  }, [ticketId]);
+
+  const handleSendReply = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!replyText.trim() || sending) return;
+
+    try {
+      setSending(true);
+      const newMsg = await api.sendMessage(ticketId, replyText.trim(), 'agent');
+      setMessages((prev) => [...prev, newMsg]);
+      setReplyText('');
+    } catch (err) {
+      console.error('Failed to send reply:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading || !ticket) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-500">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <span className="text-sm font-medium">Loading ticket #{ticketId} from database...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -59,381 +124,259 @@ export const TicketDetailsPage: React.FC = () => {
             </div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">{ticket.subject}</h1>
           </div>
+
           <div className="flex items-center gap-2">
-            <Link
-              to={`/tickets/${ticket.id}/agent-trace`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md border border-blue-200 transition-colors"
-            >
-              <Bot className="w-3.5 h-3.5" /> View Full Agent Trace
+            <Link to={`/tickets/${ticket.id}/agent-trace`}>
+              <Button variant="secondary" size="sm" icon={<Activity className="w-4 h-4 text-purple-600" />}>
+                Agent Run Details
+              </Button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-200 gap-4 sm:gap-6 overflow-x-auto scrollbar-none pb-0.5">
-        {[
-          { name: 'Conversation', icon: Bot },
-          { name: 'Order Details', icon: ShoppingBag },
-          { name: 'Customer Info', icon: User },
-          { name: 'Agent Trace', icon: Activity },
-        ].map((tab) => {
-          const isActive = activeTab === tab.name;
-          const Icon = tab.icon;
-          return (
+      {/* Tabs */}
+      <div className="border-b border-slate-200">
+        <nav className="flex space-x-6 text-xs font-medium">
+          {(['Conversation', 'Order Details', 'Customer Info', 'Agent Trace'] as const).map((tab) => (
             <button
-              key={tab.name}
-              onClick={() => setActiveTab(tab.name as any)}
-              className={`flex items-center gap-1.5 pb-2.5 text-xs sm:text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                isActive
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 border-b-2 transition-colors ${
+                activeTab === tab
                   ? 'border-blue-600 text-blue-600 font-semibold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {tab.name}
+              {tab}
             </button>
-          );
-        })}
+          ))}
+        </nav>
       </div>
 
-      {/* Main Two-column Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column (8 cols): Primary Tab Content */}
-        <div className="lg:col-span-8 space-y-4">
-          {activeTab === 'Conversation' && (
-            <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs flex flex-col min-h-[580px]">
-              {/* Message Thread */}
-              <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+      {/* Tab Panels */}
+      {activeTab === 'Conversation' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Main Messages Thread (8 cols) */}
+          <div className="lg:col-span-8 space-y-4">
+            <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs p-5">
+              <div className="space-y-4 divide-y divide-slate-100">
                 {messages.map((msg) => {
                   const isAgent = msg.senderType === 'agent';
+                  const isSystem = msg.senderType === 'system';
+
+                  if (isSystem) {
+                    return (
+                      <div key={msg.id} className="pt-3 text-center">
+                        <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[11px]">
+                          {msg.content} • {msg.timestamp}
+                        </span>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div
-                      key={msg.id}
-                      className={`flex gap-3 items-start ${
-                        isAgent ? 'pl-2' : ''
-                      }`}
-                    >
-                      <Avatar
-                        initials={msg.senderInitials || (isAgent ? 'IQ' : 'CU')}
-                        size="md"
-                        bgColor={isAgent ? '#dbeafe' : undefined}
-                      />
-                      <div className="flex-1 space-y-1.5 max-w-2xl">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-slate-900">
-                            {msg.senderName}
-                          </span>
-                          {isAgent && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-medium bg-blue-100 text-blue-700">
-                              <Sparkles className="w-2.5 h-2.5" /> AI Autopilot
+                    <div key={msg.id} className="pt-4 first:pt-0">
+                      <div className="flex items-start gap-3">
+                        <Avatar
+                          initials={msg.senderInitials || 'IQ'}
+                          size="md"
+                          bgColor={isAgent ? 'bg-purple-600' : 'bg-blue-600'}
+                        />
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-slate-900">
+                              {msg.senderName} {isAgent && <span className="text-purple-600 font-normal">(AI / Agent)</span>}
                             </span>
-                          )}
-                          <span className="text-[11px] text-slate-400">{msg.timestamp}</span>
-                        </div>
-                        <div
-                          className={`p-3.5 rounded-lg text-sm leading-relaxed border ${
-                            isAgent
-                              ? 'bg-blue-50/50 border-blue-100/80 text-slate-800'
-                              : 'bg-slate-50/80 border-slate-200/80 text-slate-800'
-                          }`}
-                        >
-                          <p className="whitespace-pre-line">{msg.content}</p>
-                          {msg.attachments && msg.attachments.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-slate-200/60">
-                              {msg.attachments.map((att, idx) => (
-                                <div
-                                  key={idx}
-                                  className="border border-slate-200 rounded-md p-2 bg-white flex items-center gap-3 max-w-sm"
-                                >
-                                  <img
-                                    src={att.url}
-                                    alt={att.name}
-                                    className="w-14 h-14 object-cover rounded bg-slate-100 border border-slate-100"
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <div className="text-xs font-medium text-slate-900 truncate">
-                                      {att.name}
-                                    </div>
-                                    <div className="text-[11px] text-slate-400">
-                                      {att.size || 'Attached photo'}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                            <span className="text-[11px] text-slate-400">{msg.timestamp}</span>
+                          </div>
+                          <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap bg-slate-50/60 p-3 rounded-lg border border-slate-100">
+                            {msg.content}
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
+
+                {messages.length === 0 && (
+                  <div className="text-center py-8 text-xs text-slate-400">
+                    No messages yet on this database ticket.
+                  </div>
+                )}
               </div>
 
-              {/* Reply Composer */}
-              <div className="p-4 border-t border-slate-200 bg-slate-50/50 rounded-b-lg">
-                <div className="bg-white rounded-md border border-slate-200 p-2 focus-within:ring-1 focus-within:ring-blue-600 focus-within:border-blue-600 transition-all shadow-2xs">
+              {/* Reply Form */}
+              <form onSubmit={handleSendReply} className="mt-6 pt-4 border-t border-slate-200">
+                <div className="relative">
                   <textarea
                     rows={3}
+                    placeholder="Type an official reply or note..."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Write a response or type '/' for macro responses..."
-                    className="w-full text-sm text-slate-900 placeholder-slate-400 resize-none focus:outline-none"
+                    className="w-full text-xs rounded-lg border border-slate-200 p-3 pr-24 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-hidden"
                   />
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <div className="flex items-center gap-1 text-slate-500">
-                      <button
-                        type="button"
-                        title="Attach file"
-                        className="p-1.5 hover:bg-slate-100 rounded text-slate-500 transition-colors"
-                      >
-                        <Paperclip className="w-4 h-4" />
-                      </button>
-                      <span className="text-xs text-slate-400 ml-2">Visual prototype only</span>
-                    </div>
-                    <Button variant="primary" size="sm" icon={<Send className="w-3.5 h-3.5" />}>
-                      Send Response
+                  <div className="absolute bottom-2.5 right-2.5">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      disabled={!replyText.trim() || sending}
+                      icon={sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    >
+                      {sending ? 'Sending...' : 'Reply'}
                     </Button>
                   </div>
                 </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Sidebar Info (4 cols) */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs p-4 space-y-3">
+              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
+                Customer Snapshot
+              </h3>
+              <div className="flex items-center gap-3">
+                <Avatar initials={ticket.customerInitials} size="lg" />
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900">{ticket.customerName}</h4>
+                  <p className="text-xs text-slate-500">{ticket.customerEmail}</p>
+                </div>
               </div>
             </div>
-          )}
 
-          {activeTab === 'Order Details' && (
-            <InfoCard title={`Associated Order: ${ticket.orderId || 'None'}`}>
-              {order ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <div>
-                      <div className="text-xs text-slate-500">Order Placed</div>
-                      <div className="text-sm font-medium text-slate-900">{order.date}</div>
-                    </div>
-                    <StatusBadge status={order.fulfillmentStatus} />
-                  </div>
-                  <div className="space-y-3">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Items Ordered
-                    </div>
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between py-2 border-b border-slate-50">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-10 h-10 rounded object-cover border border-slate-200"
-                          />
-                          <div>
-                            <div className="text-sm font-medium text-slate-900">{item.name}</div>
-                            <div className="text-xs text-slate-500">{item.variant} (Qty: {item.quantity})</div>
-                          </div>
-                        </div>
-                        <div className="text-sm font-medium text-slate-900">${item.price.toFixed(2)}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="pt-2 flex justify-between text-sm font-semibold text-slate-900">
-                    <span>Total Paid</span>
-                    <span>${order.amount.toFixed(2)}</span>
-                  </div>
-                  <div className="pt-2">
-                    <Link
-                      to={`/orders/${order.id}`}
-                      className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
-                    >
-                      View full order details <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-slate-500">No order linked to this ticket.</div>
-              )}
-            </InfoCard>
-          )}
-
-          {activeTab === 'Customer Info' && (
-            <InfoCard title="Customer Profile">
-              {customer ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                    <Avatar initials={customer.avatarInitials} size="lg" bgColor={customer.avatarBgColor} />
-                    <div>
-                      <div className="text-sm font-semibold text-slate-900">{customer.name}</div>
-                      <div className="text-xs text-slate-500">{customer.email}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <span className="text-slate-400 block">Customer Since</span>
-                      <span className="font-medium text-slate-800">{customer.joinedDate}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Phone</span>
-                      <span className="font-medium text-slate-800">{customer.phone}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Lifetime Orders</span>
-                      <span className="font-medium text-slate-800">{customer.totalOrders}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Lifetime Spent</span>
-                      <span className="font-medium text-slate-800">${customer.totalSpent.toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <div className="pt-2">
-                    <Link
-                      to={`/customers/${customer.id}`}
-                      className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
-                    >
-                      View complete customer profile <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-slate-500">Customer details not available.</div>
-              )}
-            </InfoCard>
-          )}
-
-          {activeTab === 'Agent Trace' && (
-            <InfoCard
-              title="Execution Trace Summary"
-              action={
-                <Link
-                  to={`/tickets/${ticket.id}/agent-trace`}
-                  className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-medium"
-                >
-                  Full Trace View <ExternalLink className="w-3 h-3" />
-                </Link>
-              }
-            >
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center p-3 rounded-md bg-slate-50 border border-slate-100">
-                  <div>
-                    <div className="text-[11px] text-slate-500">Steps</div>
-                    <div className="text-base font-semibold text-slate-900">{agentTrace.totalSteps}</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-slate-500">Tool Calls</div>
-                    <div className="text-base font-semibold text-slate-900">{agentTrace.toolCalls}</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-slate-500">Duration</div>
-                    <div className="text-base font-semibold text-slate-900">{agentTrace.duration}</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-slate-500">Model</div>
-                    <div className="text-xs font-mono font-medium text-slate-800 truncate">Gemini 1.5 Pro</div>
-                  </div>
-                </div>
-                <div className="divide-y divide-slate-100 text-xs">
-                  {agentTrace.steps.map((st) => (
-                    <div key={st.id} className="py-2.5 flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0"></span>
-                      <div className="flex-1">
-                        <div className="font-medium text-slate-900">{st.summary}</div>
-                        <div className="text-slate-400 font-mono text-[10px]">{st.timestamp}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </InfoCard>
-          )}
-        </div>
-
-        {/* Right Column (4 cols): Ticket Details & Actions Card */}
-        <div className="lg:col-span-4 space-y-4">
-          {/* Ticket Details Card */}
-          <InfoCard title="Ticket Details">
-            <dl className="space-y-3 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <dt className="text-slate-500">Status</dt>
-                <dd><StatusBadge status={ticket.status} size="sm" /></dd>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <dt className="text-slate-500">Priority</dt>
-                <dd><PriorityBadge priority={ticket.priority} /></dd>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <dt className="text-slate-500">Order Reference</dt>
-                <dd>
-                  {ticket.orderId ? (
-                    <Link
-                      to={`/orders/${ticket.orderId}`}
-                      className="font-mono text-blue-600 hover:underline font-semibold"
-                    >
-                      {ticket.orderId}
-                    </Link>
-                  ) : (
-                    <span className="text-slate-400">—</span>
-                  )}
-                </dd>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <dt className="text-slate-500">Customer Name</dt>
-                <dd>
-                  <Link
-                    to={`/customers/${ticket.customerId}`}
-                    className="font-medium text-slate-900 hover:text-blue-600"
-                  >
-                    {ticket.customerName}
+            {order && (
+              <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
+                    Associated Order
+                  </h3>
+                  <Link to={`/orders/${order.id}`} className="text-xs text-blue-600 hover:underline">
+                    View
                   </Link>
-                </dd>
+                </div>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Order:</span>
+                    <span className="font-mono font-medium text-slate-800">{order.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Total:</span>
+                    <span className="font-semibold text-slate-900">₹{order.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Fulfillment:</span>
+                    <StatusBadge status={order.fulfillmentStatus} size="sm" />
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <dt className="text-slate-500">Created Date</dt>
-                <dd className="text-slate-700">{ticket.createdAt}</dd>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <dt className="text-slate-500">Last Updated</dt>
-                <dd className="text-slate-700">{ticket.lastUpdated}</dd>
-              </div>
-            </dl>
-          </InfoCard>
-
-          {/* Actions Card */}
-          <InfoCard title="Actions">
-            <div className="space-y-2">
-              <Button
-                variant="primary"
-                className="w-full justify-center"
-                icon={<CheckCircle className="w-4 h-4" />}
-              >
-                Resolve Ticket
-              </Button>
-              <Button
-                variant="secondary"
-                className="w-full justify-center"
-                icon={<UserCheck className="w-4 h-4" />}
-              >
-                Escalate to Human
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-center"
-                icon={<FileEdit className="w-4 h-4" />}
-              >
-                Add Note
-              </Button>
-            </div>
-            <div className="text-[11px] text-slate-400 text-center mt-3">
-              Prototype mode: actions are visually reactive only.
-            </div>
-          </InfoCard>
-
-          {/* Quick AI Agent Summary */}
-          <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-blue-900 mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              AI Agent Insight
-            </div>
-            <p className="text-xs text-blue-800 leading-relaxed">
-              Customer has submitted photo evidence of shipping damage. Policy allows instant $149 replacement or refund.
-            </p>
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'Order Details' && (
+        <div className="bg-white rounded-lg border border-slate-200/90 p-6">
+          {order ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center border-b pb-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Order {order.id}</h3>
+                  <p className="text-xs text-slate-500">Placed on {order.date}</p>
+                </div>
+                <StatusBadge status={order.fulfillmentStatus} />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-400 block">Total Amount</span>
+                  <span className="font-semibold text-slate-800 text-sm">₹{order.amount.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">Tracking Number</span>
+                  <span className="font-mono text-slate-800">{order.tracking.number}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">Payment Status</span>
+                  <StatusBadge status={order.paymentStatus} size="sm" />
+                </div>
+                <div>
+                  <span className="text-slate-400 block">Carrier</span>
+                  <span className="font-medium text-slate-800">{order.tracking.carrier}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500">No order linked directly to this database ticket.</p>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'Customer Info' && (
+        <div className="bg-white rounded-lg border border-slate-200/90 p-6 space-y-4">
+          <div className="flex items-center gap-4">
+            <Avatar initials={ticket.customerInitials} size="xl" />
+            <div>
+              <h3 className="text-base font-bold text-slate-900">{ticket.customerName}</h3>
+              <p className="text-xs text-slate-500">{ticket.customerEmail}</p>
+              {customer?.phone && <p className="text-xs text-slate-500 mt-1">Phone: {customer.phone}</p>}
+            </div>
+          </div>
+          {customer && (
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-xs">
+              <div className="p-3 bg-slate-50 rounded-lg">
+                <span className="text-slate-400 block">Total Orders</span>
+                <span className="text-lg font-bold text-slate-900">{customer.totalOrders}</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg">
+                <span className="text-slate-400 block">Total Spent</span>
+                <span className="text-lg font-bold text-slate-900">₹{customer.totalSpent.toLocaleString()}</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg">
+                <span className="text-slate-400 block">Open Tickets</span>
+                <span className="text-lg font-bold text-slate-900">{customer.openTickets}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'Agent Trace' && (
+        <div className="bg-white rounded-lg border border-slate-200/90 p-6 space-y-4">
+          <div className="flex items-center justify-between border-b pb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Agent Reasoning Steps (Database Trace)</h3>
+              <p className="text-xs text-slate-500">Recorded tool calls and decisions executed for this ticket</p>
+            </div>
+            <Link to={`/tickets/${ticket.id}/agent-trace`}>
+              <Button variant="secondary" size="sm" icon={<ExternalLink className="w-3.5 h-3.5" />}>
+                Full Trace View
+              </Button>
+            </Link>
+          </div>
+
+          {agentTrace && agentTrace.steps.length > 0 ? (
+            <div className="space-y-3">
+              {agentTrace.steps.map((st, i) => (
+                <div key={st.id} className="p-3 bg-slate-50 rounded-md border border-slate-200/70 text-xs">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono font-semibold text-blue-700">
+                      Step #{i + 1}: {st.eventType} {st.toolName ? `(${st.toolName})` : ''}
+                    </span>
+                    <span className="text-[11px] text-slate-400">{st.timestamp}</span>
+                  </div>
+                  <p className="text-slate-700">{st.summary}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 py-6 text-center">
+              No autonomous agent traces recorded in the database for ticket #{ticket.id} yet.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -2,7 +2,9 @@ import { pool } from '../config/db.js';
 
 export const getTickets = async (req, res, next) => {
   try {
-    const query = `
+    const { customerId } = req.query;
+
+    let query = `
       SELECT
         t.id,
         t.ticket_number,
@@ -21,10 +23,17 @@ export const getTickets = async (req, res, next) => {
       JOIN customers c ON c.id = t.customer_id
       LEFT JOIN users u ON u.id = c.user_id
       LEFT JOIN orders o ON o.id = t.order_id
-      ORDER BY t.created_at DESC;
     `;
+    const params = [];
 
-    const result = await pool.query(query);
+    if (customerId) {
+      query += ` WHERE t.customer_id = $1`;
+      params.push(customerId);
+    }
+
+    query += ` ORDER BY t.created_at DESC;`;
+
+    const result = await pool.query(query, params);
 
     return res.status(200).json({
       success: true,
@@ -109,6 +118,131 @@ export const getTicketById = async (req, res, next) => {
         ...ticket,
         messages: messagesResult.rows,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createTicket = async (req, res, next) => {
+  try {
+    const { subject, description, priority, orderId, customerId } = req.body;
+
+    if (!subject || !description) {
+      return res.status(400).json({
+        success: false,
+        message: 'Subject and description are required.',
+      });
+    }
+
+    // Default customer if none specified
+    let targetCustomerId = customerId;
+    if (!targetCustomerId) {
+      const defaultCust = await pool.query(`SELECT id FROM customers ORDER BY created_at ASC LIMIT 1`);
+      targetCustomerId = defaultCust.rows[0]?.id;
+    }
+
+    // Generate ticket number e.g. TKT-1050
+    const countRes = await pool.query(`SELECT COUNT(*) FROM tickets`);
+    const nextNum = 1045 + parseInt(countRes.rows[0].count, 10);
+    const ticketNumber = `TKT-${nextNum}`;
+
+    // Resolve order_id if order_number was passed
+    let orderUUID = null;
+    if (orderId) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+      const oRes = await pool.query(
+        `SELECT id FROM orders WHERE ${isUUID ? 'id = $1' : 'order_number = $1'} LIMIT 1`,
+        [orderId]
+      );
+      if (oRes.rows.length > 0) {
+        orderUUID = oRes.rows[0].id;
+      }
+    }
+
+    const insertTicketQuery = `
+      INSERT INTO tickets (ticket_number, customer_id, order_id, subject, description, status, priority)
+      VALUES ($1, $2, $3, $4, $5, 'open', $6)
+      RETURNING *;
+    `;
+
+    const ticketRes = await pool.query(insertTicketQuery, [
+      ticketNumber,
+      targetCustomerId,
+      orderUUID,
+      subject,
+      description,
+      (priority || 'normal').toLowerCase(),
+    ]);
+
+    const createdTicket = ticketRes.rows[0];
+
+    // Add initial customer message
+    await pool.query(
+      `INSERT INTO messages (ticket_id, sender_type, content) VALUES ($1, 'customer', $2)`,
+      [createdTicket.id, description]
+    );
+
+    // Add automated AI welcome response
+    await pool.query(
+      `INSERT INTO messages (ticket_id, sender_type, content) VALUES ($1, 'agent', $2)`,
+      [
+        createdTicket.id,
+        `Hello! Thank you for reaching out to ResolveIQ. We have received your inquiry regarding "${subject}". Our team is reviewing the details and will update you shortly.`
+      ]
+    );
+
+    return res.status(201).json({
+      success: true,
+      data: createdTicket,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createMessage = async (req, res, next) => {
+  try {
+    const { ticketId } = req.params;
+    const { content, senderType = 'customer' } = req.body;
+
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message content is required.',
+      });
+    }
+
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ticketId);
+
+    const ticketLookup = await pool.query(
+      `SELECT id FROM tickets WHERE ${isUUID ? 'id = $1' : 'ticket_number = $1'} LIMIT 1`,
+      [ticketId]
+    );
+
+    if (ticketLookup.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Ticket not found`,
+      });
+    }
+
+    const realTicketId = ticketLookup.rows[0].id;
+
+    const insertQuery = `
+      INSERT INTO messages (ticket_id, sender_type, content)
+      VALUES ($1, $2, $3)
+      RETURNING *;
+    `;
+    const messageRes = await pool.query(insertQuery, [realTicketId, senderType, content]);
+
+    // Update ticket updated_at
+    await pool.query(`UPDATE tickets SET updated_at = NOW() WHERE id = $1`, [realTicketId]);
+
+    return res.status(201).json({
+      success: true,
+      data: messageRes.rows[0],
     });
   } catch (error) {
     next(error);

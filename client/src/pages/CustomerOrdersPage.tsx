@@ -13,11 +13,12 @@ import {
   MessageSquare,
   HelpCircle,
   Inbox,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 
 export const CustomerOrdersPage: React.FC = () => {
-  const { customerOrders } = useCustomer();
+  const { customerOrders, loading } = useCustomer();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('All');
 
@@ -59,99 +60,86 @@ export const CustomerOrdersPage: React.FC = () => {
             counts={counts}
           />
         </div>
+
         <div className="sm:w-72 w-full">
           <SearchInput
-            placeholder="Search by order ID, item name..."
+            placeholder="Search by order ID or item..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Order Cards List */}
-      <div className="space-y-4">
-        {filteredOrders.map((order) => (
-          <div
-            key={order.id}
-            className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-5 hover:border-slate-300 transition-colors"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-mono text-sm font-bold text-slate-900">
-                  Order #{order.id}
-                </span>
-                <StatusBadge status={order.fulfillmentStatus} size="sm" />
-                <span className="text-xs text-slate-500">Placed on {order.date}</span>
-              </div>
-              <div className="font-semibold text-slate-900 text-sm">
-                Total: ${order.amount.toFixed(2)}
-              </div>
-            </div>
+      {/* Orders List Container */}
+      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
+        {loading ? (
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-500">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            <span className="text-sm">Fetching your orders from database...</span>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                className="p-5 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-5"
+              >
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="w-12 h-12 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                    <Package className="w-6 h-6" />
+                  </div>
 
-            {/* Items in this order */}
-            <div className="py-4 divide-y divide-slate-100">
-              {order.items.map((item) => (
-                <div key={item.id} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-14 h-14 rounded-lg object-cover border border-slate-200 bg-slate-50 shrink-0"
-                    />
-                    <div>
-                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900">
-                        {item.name}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        {item.variant} • Qty {item.quantity}
-                      </p>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
+                        {order.id}
+                      </span>
+                      <StatusBadge status={order.fulfillmentStatus} size="sm" />
+                      <span className="text-xs text-slate-400">Placed on {order.date}</span>
+                    </div>
+
+                    <h3 className="text-sm font-semibold text-slate-900 truncate">
+                      {order.items[0]?.name || 'Purchased Products'}
+                    </h3>
+
+                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                      <span className="font-mono font-medium text-slate-800">
+                        ₹{order.amount.toLocaleString()}
+                      </span>
+                      <span>•</span>
+                      <span>Tracking: {order.tracking.number}</span>
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <span className="text-xs sm:text-sm font-medium text-slate-900">
-                      ${item.price.toFixed(2)}
-                    </span>
-                  </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Tracking & Actions Footer */}
-            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-slate-600">
-                <Truck className="w-4 h-4 text-slate-400" />
-                <span>
-                  {order.tracking.carrier}: <strong className="font-mono font-medium text-slate-800">{order.tracking.number}</strong>
-                </span>
-                <span className="text-slate-400">•</span>
-                <span className="text-slate-500">{order.tracking.status}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link to={`/portal/tickets/new?orderId=${order.id}`}>
+                    <Button variant="secondary" size="sm" icon={<MessageSquare className="w-3.5 h-3.5" />}>
+                      Request Support
+                    </Button>
+                  </Link>
+                  <Link to={`/portal/orders/${order.id}`}>
+                    <Button variant="primary" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>
+                      Order Details
+                    </Button>
+                  </Link>
+                </div>
               </div>
+            ))}
 
-              <div className="flex items-center gap-2">
-                <Link to={`/portal/orders/${order.id}`}>
-                  <Button variant="secondary" size="sm">
-                    View Order
-                  </Button>
-                </Link>
-                <Link to={`/portal/tickets/new?orderId=${order.id}`}>
-                  <Button variant="outline" size="sm" icon={<HelpCircle className="w-3.5 h-3.5 text-blue-600" />}>
-                    Get Help
-                  </Button>
-                </Link>
+            {filteredOrders.length === 0 && (
+              <div className="py-16 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-slate-100 mx-auto flex items-center justify-center text-slate-400">
+                  <Package className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900">No orders found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  {search
+                    ? 'No orders match your current search term.'
+                    : 'You do not have any purchases recorded in the system yet.'}
+                </p>
               </div>
-            </div>
-          </div>
-        ))}
-
-        {filteredOrders.length === 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-              <Inbox className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-semibold text-slate-900">No orders found</h3>
-            <p className="text-xs text-slate-500">
-              No orders matched your selected search or status filters.
-            </p>
+            )}
           </div>
         )}
       </div>
